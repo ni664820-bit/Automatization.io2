@@ -1,0 +1,16 @@
+services:
+  bot:
+    build: .
+    restart: unless-stopped        # автоперезапуск после падения и после ребута сервера
+    env_file: .env                 # BOT_TOKEN, ADMIN_CHAT_ID и пр.
+    volumes:
+      - ./data:/app/data           # БД и логи переживают пересборку образа
+    ports:
+      - "8080:8080"                # /health для мониторинга (UptimeRobot и т.п.)
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=5)"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
